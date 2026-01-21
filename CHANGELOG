@@ -1,0 +1,6 @@
+v1.0.0
+- CLI:
+	- Feature: added the possibility to generate a Version Info File out of command-line flags.
+	- Feature: added the possibility to verify the generated Version Info File (Windows-only).
+- Documentation:
+	- Feature: covers all the features available in v1.0.0.

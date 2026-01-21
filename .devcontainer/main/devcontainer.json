@@ -1,0 +1,24 @@
+{
+	"name": "main",
+	"image": "nwversioninfofiles:main",
+	"initializeCommand": "docker build -f .devcontainer/main/Dockerfile -t nwversioninfofiles:main .",
+	"runArgs": ["--name", "nwversioninfofiles-main"],
+	"containerEnv": {
+		"DEVCONTAINER_NAME": "main"
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-toolsai.jupyter",
+				"ms-toolsai.datawrangler",
+				"shd101wyy.markdown-preview-enhanced"
+			]
+		}
+	},
+	"mounts": [
+			"source=${localEnv:USERPROFILE}/Desktop/nwversioninfofiles/,target=/home/nwversioninfofiles/,type=bind,consistency=cached"
+		]
+}
