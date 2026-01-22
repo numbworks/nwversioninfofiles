@@ -62,7 +62,7 @@ class _MessageCollection():
     # VersionInfoFileCreator
     @staticmethod
     def provided_file_version_invalid(file_version : str) -> str:
-        return f"The provided version ('{file_version}') is invalid. Supported formats: '2.3.14' or '2.3.14.4355'."
+        return f"The provided 'file_version' ('{file_version}') is invalid. Supported formats: '2.3.14' or '2.3.14.4355'."
     
     # VersionInfoFileWriter
     @staticmethod
