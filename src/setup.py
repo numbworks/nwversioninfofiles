@@ -18,7 +18,7 @@ if __name__ == "__main__":
         url = f"https://github.com/numbworks/{MODULE_NAME}",
         py_modules = [ MODULE_NAME ],
         install_requires = [
-            "pyinstaller>=6.11.1"
+            "pyinstaller==6.11.1"
         ],
         python_requires = ">=3.12",
         license = "MIT"

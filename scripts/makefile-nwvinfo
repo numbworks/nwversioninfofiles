@@ -1,0 +1,28 @@
+include makefile
+
+MODULE_NAME = "nwversioninfofiles"
+
+.PHONY: \
+	clear \
+	makefile-info \
+	codemetrics-concise \
+	compile-concise \
+	coverage-concise \
+	docstrings-concise \
+	setup-concise \
+	tryinstall-concise \
+	type-concise \
+	unittest-concise \
+	all-concise
+
+all-concise: \
+	clear \
+	makefile-info \
+	codemetrics-concise \
+	compile-concise \
+	coverage-concise \
+	docstrings-concise \
+	setup-concise \
+	tryinstall-concise \
+	type-concise \
+	unittest-concise
