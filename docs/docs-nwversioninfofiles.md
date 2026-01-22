@@ -68,9 +68,38 @@ To run this application on Windows and Linux:
 
 Examples:
 
-- `python nwversioninfofiles.py --company_name "some company name" --file_description "some description" ...`
-- `python nwversioninfofiles.py ... --output_path "/mnt/c/versioninfofile.txt"`
-- `python nwversioninfofiles.py ... --output_path "/mnt/c/versioninfofile.txt" --verify`
+```cmd
+python.exe -m nwversioninfofilescli.py \
+	--company_name "numbworks" \
+	--legal_copyright "numbworks" \
+	--file_description "An app that does something." \
+	--file_version "1.0.0" \
+	--product_name "numbworks" \
+	--original_filename "app.exe" \
+```
+
+```cmd
+python.exe -m nwversioninfofilescli.py \
+	--company_name "numbworks" \
+	--legal_copyright "numbworks" \
+	--file_description "An app that does something." \
+	--file_version "1.0.0" \
+	--product_name "numbworks" \
+	--original_filename "app.exe" \
+	--output_path "version_info_file.txt" \
+```
+
+```cmd
+python.exe -m nwversioninfofilescli.py \
+	--company_name "numbworks" \
+	--legal_copyright "numbworks" \
+	--file_description "An app that does something." \
+	--file_version "1.0.0" \
+	--product_name "numbworks" \
+	--original_filename "app.exe" \
+	--output_path "version_info_file.txt" \
+	--verify
+```
 
 ## Appendix - Architecture
 
