@@ -2,7 +2,7 @@
 
 | <sub>nwversioninfofiles</sub> |
 |---|
-|![codecoverage_nwversioninfofiles.svg](codecoverage_nwversioninfofiles.svg)|
+|![codecoverage-nwversioninfofiles.svg](codecoverage-nwversioninfofiles.svg)|
 
 Contact: numbworks@gmail.com
 
