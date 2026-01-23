@@ -5,8 +5,6 @@ RUN pip install --upgrade pip==25.3
 
 # MAKEFILE
 RUN pip install mypy==1.13.0
-RUN pip install pandas-stubs==2.2.3.241009
-RUN pip install types-requests==2.32.0.20241016
 RUN pip install radon==6.0.1
 RUN pip install pylint==3.3.3
 RUN pip install 'git+https://github.com/numbworks/nwpackageversions.git@v1.8.1#egg=nwpackageversions&subdirectory=src'

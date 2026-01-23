@@ -17,7 +17,7 @@ check-pythonversion:
 	python -c "$$code"
 check-requirements:
 	@clear; \
-	file_path="$(ROOT_DIR)/.devcontainer/Dockerfile"; \
+	file_path="$(ROOT_DIR)/.devcontainer/main/Dockerfile"; \
 	code="from nwpackageversions import RequirementChecker; print(RequirementChecker().try_check(file_path = '$$file_path', only_stable_releases = True, sort_requirement_details = True))"; \
 	python -c "$$code";
 codemetrics-concise:
