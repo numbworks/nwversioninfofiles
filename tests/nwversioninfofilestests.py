@@ -401,7 +401,7 @@ class CLIManagerTestCase(unittest.TestCase):
             print_function.assert_not_called()
 
             self.assertEqual(context.exception.code, 0)
-    def test_trydispatch_shouldperformexpectedcalls_whenallargumentsandwriterfails(self) -> None:
+    def test_trydispatch_shouldperformexpectedcalls_whenallargumentsbutwriterfails(self) -> None:
 
         # Arrange
         vinf_creator : Mock = Mock(spec = VersionInfoFileCreator)
@@ -443,7 +443,7 @@ class CLIManagerTestCase(unittest.TestCase):
             vinf_verifier.try_verify.assert_not_called()
 
             self.assertEqual(context.exception.code, 1)
-    def test_trydispatch_shouldperformexpectedcalls_whenallargumentsandverifierfails(self) -> None:
+    def test_trydispatch_shouldperformexpectedcalls_whenallargumentsbutverifierfails(self) -> None:
 
         # Arrange
         vinf_creator : Mock = Mock(spec = VersionInfoFileCreator)
