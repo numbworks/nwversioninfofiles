@@ -82,12 +82,13 @@ class VersionInfoFileCreatorTestCase(unittest.TestCase):
     ])
     def test_tokenize_shouldraiseexception_wheninvalidfileversion(self, file_version : str, expected : str) -> None:
 
-        # Arrange
-        # Act, Assert
         with self.assertRaises(ValueError) as context:
+
+            # Act
             self.vinf_creator._VersionInfoFileCreator__tokenize(file_version = file_version)  # type: ignore
 
-        self.assertEqual(expected, str(context.exception))
+            # Assert
+            self.assertEqual(expected, str(context.exception))
     
     def test_create_shouldreturnexpectedstring_wheninvoked(self) -> None:
 
@@ -133,10 +134,10 @@ class VersionInfoFileWriterTestCase(unittest.TestCase):
         expected_status : bool = True
         expected_message : str = "The provided Version Info File ('test_folder/version_info_file.txt') has been successfully written to disk."
 
-        # Act
         with patch("os.makedirs") as mocked_makedirs, \
              patch("builtins.open", mock_open()) as mocked_open:
-            
+
+            # Act            
             vinf_writer : VersionInfoFileWriter = VersionInfoFileWriter()
             actual : bool = vinf_writer.write(content = content, output_path = output_path)
 
@@ -155,9 +156,9 @@ class VersionInfoFileWriterTestCase(unittest.TestCase):
         expected_status : bool = False
         expected_message : str = "The provided Version Info File ('test_folder/version_info_file.txt') has not been written to disk ('Permission denied')."
 
-        # Act
         with patch("os.makedirs", side_effect = exception):
-            
+
+            # Act            
             vinf_writer : VersionInfoFileWriter = VersionInfoFileWriter()
             actual : bool = vinf_writer.write(content = content, output_path = output_path)
 
@@ -176,12 +177,13 @@ class VersionInfoFileVerifierTestCase(unittest.TestCase):
         # Arrange
         vinf_verifier : VersionInfoFileVerifier = VersionInfoFileVerifier()
 
-        # Act
         with patch("platform.system", return_value = system_name):
+
+            # Act
             actual : bool = vinf_verifier._VersionInfoFileVerifier__is_windows()  # type: ignore
 
-        # Assert
-        self.assertEqual(expected, actual)
+            # Assert
+            self.assertEqual(expected, actual)
 
     def test_tryverify_shouldreturntrueandaddsuccessmessage_whenonwindowsandfilecompliant(self) -> None:
 
@@ -199,10 +201,10 @@ class VersionInfoFileVerifierTestCase(unittest.TestCase):
             # Act            
             actual : bool = vinf_verifier.try_verify(file_path = file_path)
 
-        # Assert
-        self.assertEqual(expected_status, actual)
-        self.assertEqual(vinf_verifier.messages[0], expected_message)
-        mocked_lvi.assert_called_once_with(file_path)
+            # Assert
+            self.assertEqual(expected_status, actual)
+            self.assertEqual(vinf_verifier.messages[0], expected_message)
+            mocked_lvi.assert_called_once_with(file_path)
     def test_tryverify_shouldreturnfalseandadderrormessage_whenonwindowsandfilenotcompliant(self) -> None:
 
         # Arrange
@@ -220,10 +222,10 @@ class VersionInfoFileVerifierTestCase(unittest.TestCase):
             # Act
             actual : bool = vinf_verifier.try_verify(file_path = file_path)
 
-        # Assert
-        self.assertEqual(expected_status, actual)
-        self.assertEqual(vinf_verifier.messages[0], expected_message)
-        mocked_lvi.assert_called_once_with(file_path)
+            # Assert
+            self.assertEqual(expected_status, actual)
+            self.assertEqual(vinf_verifier.messages[0], expected_message)
+            mocked_lvi.assert_called_once_with(file_path)
     def test_tryverify_shouldreturnfalseandaddmessage_whennotonwindows(self) -> None:
 
         # Arrange
@@ -238,9 +240,9 @@ class VersionInfoFileVerifierTestCase(unittest.TestCase):
             # Act
             actual : bool = vinf_verifier.try_verify(file_path = file_path)
 
-        # Assert
-        self.assertEqual(expected_status, actual)
-        self.assertEqual(vinf_verifier.messages[0], expected_message)
+            # Assert
+            self.assertEqual(expected_status, actual)
+            self.assertEqual(vinf_verifier.messages[0], expected_message)
 class CLIManagerTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -391,28 +393,27 @@ class CLIManagerTestCase(unittest.TestCase):
             print_function = print_function
         )
 
-        with patch.object(cli_manager, "_CLIManager__get_default_output_path", return_value = self.default_output_path) as mocked_get_path:  # type: ignore
-
-            # Act            
-            with self.assertRaises(SystemExit) as context:
+        # Act
+        with patch.object(cli_manager, "_CLIManager__get_default_output_path", return_value = self.default_output_path) as mocked_get_path, \
+             self.assertRaises(SystemExit) as context:
                 cli_manager._CLIManager__try_dispatch(namespace = self.namespace_all)  # type: ignore
 
-            # Assert
-            vinf_creator.create.assert_called_once_with(
-                company_name = self.company_name,
-                file_description = self.file_description,
-                file_version = self.file_version,
-                legal_copyright = self.legal_copyright,
-                original_filename = self.original_filename,
-                product_name = self.product_name
-            )
-            
-            mocked_get_path.assert_called_once_with(self.original_filename)
-            vinf_writer.write.assert_called_once_with(content = self.content, output_path = self.output_path)
-            vinf_verifier.try_verify.assert_called_once_with(self.output_path)
-            print_function.assert_not_called()
+        # Assert
+        vinf_creator.create.assert_called_once_with(
+            company_name = self.company_name,
+            file_description = self.file_description,
+            file_version = self.file_version,
+            legal_copyright = self.legal_copyright,
+            original_filename = self.original_filename,
+            product_name = self.product_name
+        )
+        
+        mocked_get_path.assert_called_once_with(self.original_filename)
+        vinf_writer.write.assert_called_once_with(content = self.content, output_path = self.output_path)
+        vinf_verifier.try_verify.assert_called_once_with(self.output_path)
+        print_function.assert_not_called()
 
-            self.assertEqual(context.exception.code, 0)
+        self.assertEqual(context.exception.code, 0)
     def test_trydispatch_shouldperformexpectedcalls_whenallargumentsbutwriterfails(self) -> None:
 
         # Arrange
@@ -433,28 +434,27 @@ class CLIManagerTestCase(unittest.TestCase):
             print_function = print_function
         )
 
-        with patch.object(cli_manager, "_CLIManager__get_default_output_path", return_value = self.default_output_path) as mocked_get_path:  # type: ignore
-            
-            # Act            
-            with self.assertRaises(SystemExit) as context:
+        # Act  
+        with patch.object(cli_manager, "_CLIManager__get_default_output_path", return_value = self.default_output_path) as mocked_get_path, \
+             self.assertRaises(SystemExit) as context:
                 cli_manager._CLIManager__try_dispatch(namespace = self.namespace_all)  # type: ignore
 
-            # Assert              
-            vinf_creator.create.assert_called_once_with(
-                company_name = self.company_name,
-                file_description = self.file_description,
-                file_version = self.file_version,
-                legal_copyright = self.legal_copyright,
-                original_filename = self.original_filename,
-                product_name = self.product_name
-            )
-            
-            mocked_get_path.assert_called_once_with(self.original_filename)
-            vinf_writer.write.assert_called_once_with(content = self.content, output_path = self.output_path)
-            print_function.assert_any_call("Some writing error message.")
-            vinf_verifier.try_verify.assert_not_called()
+        # Assert
+        vinf_creator.create.assert_called_once_with(
+            company_name = self.company_name,
+            file_description = self.file_description,
+            file_version = self.file_version,
+            legal_copyright = self.legal_copyright,
+            original_filename = self.original_filename,
+            product_name = self.product_name
+        )
+        
+        mocked_get_path.assert_called_once_with(self.original_filename)
+        vinf_writer.write.assert_called_once_with(content = self.content, output_path = self.output_path)
+        print_function.assert_any_call("Some writing error message.")
+        vinf_verifier.try_verify.assert_not_called()
 
-            self.assertEqual(context.exception.code, 1)
+        self.assertEqual(context.exception.code, 1)
     def test_trydispatch_shouldperformexpectedcalls_whenallargumentsbutverifierfails(self) -> None:
 
         # Arrange
@@ -481,28 +481,27 @@ class CLIManagerTestCase(unittest.TestCase):
             print_function = print_function
         )
 
-        with patch.object(cli_manager, "_CLIManager__get_default_output_path", return_value = self.default_output_path) as mocked_get_path:  # type: ignore
-            
-            # Act
-            with self.assertRaises(SystemExit) as context:
+        # Act
+        with patch.object(cli_manager, "_CLIManager__get_default_output_path", return_value = self.default_output_path) as mocked_get_path, \
+             self.assertRaises(SystemExit) as context:
                 cli_manager._CLIManager__try_dispatch(namespace = self.namespace_all)  # type: ignore
 
-            # Assert          
-            vinf_creator.create.assert_called_once_with(
-                company_name = self.company_name,
-                file_description = self.file_description,
-                file_version = self.file_version,
-                legal_copyright = self.legal_copyright,
-                original_filename = self.original_filename,
-                product_name = self.product_name
-            )
-            
-            mocked_get_path.assert_called_once_with(self.original_filename)
-            vinf_writer.write.assert_called_once_with(content = self.content, output_path = self.output_path)
-            vinf_verifier.try_verify.assert_called_once_with(self.output_path)
-            print_function.assert_called_once_with(error_message)
+        # Assert          
+        vinf_creator.create.assert_called_once_with(
+            company_name = self.company_name,
+            file_description = self.file_description,
+            file_version = self.file_version,
+            legal_copyright = self.legal_copyright,
+            original_filename = self.original_filename,
+            product_name = self.product_name
+        )
+        
+        mocked_get_path.assert_called_once_with(self.original_filename)
+        vinf_writer.write.assert_called_once_with(content = self.content, output_path = self.output_path)
+        vinf_verifier.try_verify.assert_called_once_with(self.output_path)
+        print_function.assert_called_once_with(error_message)
 
-            self.assertEqual(context.exception.code, 1)
+        self.assertEqual(context.exception.code, 1)
     def test_trydispatch_shouldperformexpectedcalls_whenonlyoptionalarguments(self) -> None:
 
         # Arrange
@@ -526,28 +525,27 @@ class CLIManagerTestCase(unittest.TestCase):
             print_function = print_function
         )
 
-        with patch.object(cli_manager, "_CLIManager__get_default_output_path", return_value = self.default_output_path) as mocked_get_path:  # type: ignore
-            
-            # Act
-            with self.assertRaises(SystemExit) as context:
+        # Act
+        with patch.object(cli_manager, "_CLIManager__get_default_output_path", return_value = self.default_output_path) as mocked_get_path, \
+             self.assertRaises(SystemExit) as context:
                 cli_manager._CLIManager__try_dispatch(namespace = self.namespace_only_mandatory)  # type: ignore
 
-            # Assert
-            vinf_creator.create.assert_called_once_with(
-                company_name = self.company_name,
-                file_description = self.file_description,
-                file_version = self.file_version,
-                legal_copyright = self.legal_copyright,
-                original_filename = self.original_filename,
-                product_name = self.product_name
-            )
-            
-            mocked_get_path.assert_called_once_with(self.original_filename)
-            vinf_writer.write.assert_called_once_with(content = self.content, output_path = self.default_output_path)
-            vinf_verifier.try_verify.assert_not_called()
-            print_function.assert_not_called()
+        # Assert
+        vinf_creator.create.assert_called_once_with(
+            company_name = self.company_name,
+            file_description = self.file_description,
+            file_version = self.file_version,
+            legal_copyright = self.legal_copyright,
+            original_filename = self.original_filename,
+            product_name = self.product_name
+        )
+        
+        mocked_get_path.assert_called_once_with(self.original_filename)
+        vinf_writer.write.assert_called_once_with(content = self.content, output_path = self.default_output_path)
+        vinf_verifier.try_verify.assert_not_called()
+        print_function.assert_not_called()
 
-            self.assertEqual(context.exception.code, 0)
+        self.assertEqual(context.exception.code, 0)
 
     def test_parse_shouldexitwithcodezero_wheninitializeparserandtrydispatchsucceed(self) -> None:
 
