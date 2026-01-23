@@ -193,10 +193,10 @@ class VersionInfoFileVerifierTestCase(unittest.TestCase):
         expected_status : bool = True
         expected_message : str = "The provided Version Info File ('test_folder/version_info_file.txt') is compliant with PyInstaller."
 
-        # Act
         with patch.object(vinf_verifier, "_VersionInfoFileVerifier__is_windows", return_value = True), \
-                patch.dict('sys.modules', {'PyInstaller.utils.win32.versioninfo': Mock(load_version_info_from_text_file = mocked_lvi)}):
-            
+             patch.dict('sys.modules', {'PyInstaller.utils.win32.versioninfo': Mock(load_version_info_from_text_file = mocked_lvi)}):
+
+            # Act            
             actual : bool = vinf_verifier.try_verify(file_path = file_path)
 
         # Assert
@@ -214,10 +214,10 @@ class VersionInfoFileVerifierTestCase(unittest.TestCase):
         expected_status : bool = False
         expected_message : str = "The provided Version Info File ('test_folder/version_info_file.txt') is not compliant with PyInstaller ('Invalid format')."
 
-        # Act
         with patch.object(vinf_verifier, "_VersionInfoFileVerifier__is_windows", return_value = True), \
-                patch.dict('sys.modules', {'PyInstaller.utils.win32.versioninfo': Mock(load_version_info_from_text_file = mocked_lvi)}):
-            
+             patch.dict('sys.modules', {'PyInstaller.utils.win32.versioninfo': Mock(load_version_info_from_text_file = mocked_lvi)}):
+
+            # Act
             actual : bool = vinf_verifier.try_verify(file_path = file_path)
 
         # Assert
@@ -233,8 +233,9 @@ class VersionInfoFileVerifierTestCase(unittest.TestCase):
         expected_status : bool = False
         expected_message : str = "This library is not running on Windows, the verification is not possible."
 
-        # Act
         with patch.object(vinf_verifier, "_VersionInfoFileVerifier__is_windows", return_value = False):
+
+            # Act
             actual : bool = vinf_verifier.try_verify(file_path = file_path)
 
         # Assert
@@ -279,6 +280,17 @@ class CLIManagerTestCase(unittest.TestCase):
             output_path = self.default_output_path,
             verify = self.default_verify
         )
+
+        self.args_all : list[str] = [
+            "--company_name", self.company_name,
+            "--file_description", self.file_description,
+            "--file_version", self.file_version,
+            "--legal_copyright", self.legal_copyright,
+            "--original_filename", self.original_filename,
+            "--product_name", self.product_name,
+            "--output_path", self.output_path,
+            "--verify"
+        ]
 
     def test_initializeparser_shouldaddexpectedarguments_wheninvoked(self) -> None:
 
@@ -537,6 +549,47 @@ class CLIManagerTestCase(unittest.TestCase):
 
             self.assertEqual(context.exception.code, 0)
 
+    def test_parse_shouldexitwithcodezero_wheninitializeparserandtrydispatchsucceed(self) -> None:
+
+        # Arrange
+        argument_parser : Mock = Mock(spec = ArgumentParser)
+        argument_parser.parse_args.return_value = self.namespace_all
+        
+        cli_manager : CLIManager = CLIManager(argument_parser = argument_parser)
+
+        # Act
+        with patch.object(cli_manager, "_CLIManager__initialize_parser") as mocked_initialize_parser, \
+             patch.object(cli_manager, "_CLIManager__try_dispatch", side_effect = lambda x : sys.exit(0)) as mocked_try_dispatch, \
+             self.assertRaises(SystemExit) as context:
+                cli_manager.parse(args = self.args_all)
+
+        # Assert
+        argument_parser.parse_args.assert_called_once_with(self.args_all)
+        mocked_initialize_parser.assert_called_once()
+        mocked_try_dispatch.assert_called_once_with(self.namespace_all)
+        self.assertEqual(context.exception.code, 0)
+    def test_parse_shouldexitwithcodeone_wheninitializeparserraisesexception(self) -> None:
+
+        # Arrange
+        argument_parser : Mock = Mock(spec = ArgumentParser)
+        print_function : Mock = Mock()
+              
+        cli_manager : CLIManager = CLIManager(
+            argument_parser = argument_parser,
+            print_function = print_function
+        )
+
+        exception : Exception = Exception("Failed to initialize parser")
+
+        # Act
+        with patch.object(cli_manager, "_CLIManager__initialize_parser", side_effect = exception):
+            with self.assertRaises(SystemExit) as context:
+                cli_manager.parse(args = self.args_all)
+
+        # Assert
+        argument_parser.parse_args.assert_not_called()
+        print_function.assert_called_once_with("Failed to initialize parser")
+        self.assertEqual(context.exception.code, 1)
 
 # MAIN
 if __name__ == "__main__":
