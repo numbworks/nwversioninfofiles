@@ -3,15 +3,13 @@ import unittest
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from parameterized import parameterized
-from subprocess import CompletedProcess
-from tabulate import tabulate
 from typing import Callable, Literal, Optional, Tuple
 from unittest.mock import Mock, mock_open, patch
 
 # LOCAL MODULES
 import sys, os
 sys.path.append(os.path.dirname(__file__).replace('tests', 'src'))
-from nwversioninfofiles import VersionInfoFileCreator, VersionInfoFileWriter
+from nwversioninfofiles import VersionInfoFileCreator, VersionInfoFileWriter, VersionInfoFileVerifier
 
 # SUPPORT METHODS
 # TEST CLASSES
@@ -171,6 +169,82 @@ class VersionInfoFileWriterTestCase(unittest.TestCase):
             # Assert
             self.assertEqual(expected_status, actual)
             self.assertEqual(expected_message, vinf_writer.messages[0])
+class VersionInfoFileVerifierTestCase(unittest.TestCase):
+
+    @parameterized.expand([
+        ("Windows", True),
+        ("Linux", False),
+        ("Darwin", False)
+    ])
+    def test_iswindows_shouldreturnexpectedboolean_wheninvoked(self, system_name : str, expected : bool) -> None:
+
+        # Arrange
+        vinf_verifier : VersionInfoFileVerifier = VersionInfoFileVerifier()
+
+        # Act
+        with patch("platform.system", return_value = system_name):
+            actual : bool = vinf_verifier._VersionInfoFileVerifier__is_windows()  # type: ignore
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_tryverify_shouldreturntrueandaddsuccessmessage_whenonwindowsandfilecompliant(self) -> None:
+
+        # Arrange
+        file_path : str = "test_folder/version_info_file.txt"      
+        vinf_verifier : VersionInfoFileVerifier = VersionInfoFileVerifier()
+        mocked_lvi : Mock = Mock()
+
+        expected_status : bool = True
+        expected_message : str = "The provided Version Info File ('test_folder/version_info_file.txt') is compliant with PyInstaller."
+
+        # Act
+        with patch.object(vinf_verifier, "_VersionInfoFileVerifier__is_windows", return_value = True), \
+                patch.dict('sys.modules', {'PyInstaller.utils.win32.versioninfo': Mock(load_version_info_from_text_file = mocked_lvi)}):
+            
+            actual : bool = vinf_verifier.try_verify(file_path = file_path)
+
+        # Assert
+        self.assertEqual(expected_status, actual)
+        self.assertEqual(vinf_verifier.messages[0], expected_message)
+        mocked_lvi.assert_called_once_with(file_path)
+    def test_tryverify_shouldreturnfalseandadderrormessage_whenonwindowsandfilenotcompliant(self) -> None:
+
+        # Arrange
+        file_path : str = "test_folder/version_info_file.txt"      
+        vinf_verifier : VersionInfoFileVerifier = VersionInfoFileVerifier()
+        mocked_exception : Exception = Exception("Invalid format")
+        mocked_lvi : Mock = Mock(side_effect = mocked_exception)
+
+        expected_status : bool = False
+        expected_message : str = "The provided Version Info File ('test_folder/version_info_file.txt') is not compliant with PyInstaller ('Invalid format')."
+
+        # Act
+        with patch.object(vinf_verifier, "_VersionInfoFileVerifier__is_windows", return_value = True), \
+                patch.dict('sys.modules', {'PyInstaller.utils.win32.versioninfo': Mock(load_version_info_from_text_file = mocked_lvi)}):
+            
+            actual : bool = vinf_verifier.try_verify(file_path = file_path)
+
+        # Assert
+        self.assertEqual(expected_status, actual)
+        self.assertEqual(vinf_verifier.messages[0], expected_message)
+        mocked_lvi.assert_called_once_with(file_path)
+    def test_tryverify_shouldreturnfalseandaddmessage_whennotonwindows(self) -> None:
+
+        # Arrange
+        file_path : str = "test/version_info.txt"      
+        vinf_verifier : VersionInfoFileVerifier = VersionInfoFileVerifier()
+
+        expected_status : bool = False
+        expected_message : str = "This library is not running on Windows, the verification is not possible."
+
+        # Act
+        with patch.object(vinf_verifier, "_VersionInfoFileVerifier__is_windows", return_value = False):
+            actual : bool = vinf_verifier.try_verify(file_path = file_path)
+
+        # Assert
+        self.assertEqual(expected_status, actual)
+        self.assertEqual(vinf_verifier.messages[0], expected_message)
 
 # MAIN
 if __name__ == "__main__":

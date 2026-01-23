@@ -81,7 +81,7 @@ class _MessageCollection():
         return f"The provided Version Info File ('{file_path}') is compliant with PyInstaller."
     @staticmethod
     def provided_vinf_not_compliant(file_path : str, e : Exception) -> str:
-        return f"The provided Version Info File ('{file_path}') is not compliant with PyInstaller '({e})'."
+        return f"The provided Version Info File ('{file_path}') is not compliant with PyInstaller ('{e}')."
 
 # CLASSES
 class VersionInfoFileCreator:
