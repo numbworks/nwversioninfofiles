@@ -9,7 +9,7 @@ import platform
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from typing import Callable, Final, Optional, Tuple
+from typing import Callable, Final, Iterable, Optional, Tuple
 
 # LOCAL/NW MODULES
 # GENERIC CLASSES
@@ -171,8 +171,13 @@ class VersionInfoFileWriter:
     
     '''Collects all the logic related to writing a Version Info File to disk.'''
 
-    messages : Final[list[str]] = []
-    
+    @property
+    def messages(self) -> tuple[str, ...]:
+        return tuple(self._messages)
+
+    def __init__(self) -> None:
+        self._messages : list[str] = []
+
     def write(self, content : str, output_path : str) -> bool:
 
         '''Returns True if the provided Version Info File has been successfully written to disk.'''
@@ -184,20 +189,25 @@ class VersionInfoFileWriter:
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             
-            self.messages.append(_MessageCollection.provided_vinf_successfully_written(output_path))
+            self._messages.append(_MessageCollection.provided_vinf_successfully_written(output_path))
 
             return True
             
         except Exception as e:
 
-            self.messages.append(_MessageCollection.provided_vinf_not_written(output_path, e))
+            self._messages.append(_MessageCollection.provided_vinf_not_written(output_path, e))
             
             return False
 class VersionInfoFileVerifier:
     
     '''Collects all the logic related to the verification of a Version Info File.'''
     
-    messages : Final[list[str]] = []
+    @property
+    def messages(self) -> tuple[str, ...]:
+        return tuple(self._messages)
+
+    def __init__(self) -> None:
+        self._messages : list[str] = []
 
     def __is_windows(self) -> bool:
 
@@ -217,7 +227,7 @@ class VersionInfoFileVerifier:
 
         if not self.__is_windows():
             
-            self.messages.append(_MessageCollection.this_library_not_running_on_windows())
+            self._messages.append(_MessageCollection.this_library_not_running_on_windows())
             
             return False
         
@@ -226,13 +236,13 @@ class VersionInfoFileVerifier:
             from PyInstaller.utils.win32.versioninfo import load_version_info_from_text_file    # type: ignore
             load_version_info_from_text_file(file_path)
             
-            self.messages.append(_MessageCollection.provided_vinf_compliant(file_path))
+            self._messages.append(_MessageCollection.provided_vinf_compliant(file_path))
 
             return True
         
         except Exception as e:
 
-            self.messages.append(_MessageCollection.provided_vinf_not_compliant(file_path, e))            
+            self._messages.append(_MessageCollection.provided_vinf_not_compliant(file_path, e))            
 
             return False
 class CLIManager:
@@ -317,7 +327,7 @@ class CLIManager:
         output_path : str = os.path.join(os.getcwd(), f"{base_name}.txt")
 
         return output_path
-    def __print_messages(self, messages : list[str]) -> None:
+    def __print_messages(self, messages : Iterable[str]) -> None:
                        
         '''Prints messages.'''
 

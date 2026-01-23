@@ -6,12 +6,12 @@ from parameterized import parameterized
 from subprocess import CompletedProcess
 from tabulate import tabulate
 from typing import Callable, Literal, Optional, Tuple
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, mock_open, patch
 
 # LOCAL MODULES
 import sys, os
 sys.path.append(os.path.dirname(__file__).replace('tests', 'src'))
-from nwversioninfofiles import VersionInfoFileCreator
+from nwversioninfofiles import VersionInfoFileCreator, VersionInfoFileWriter
 
 # SUPPORT METHODS
 # TEST CLASSES
@@ -125,6 +125,52 @@ class VersionInfoFileCreatorTestCase(unittest.TestCase):
         # Assert
         for expected_string in expected_strings:
             self.assertIn(expected_string, actual)
+class VersionInfoFileWriterTestCase(unittest.TestCase):
+
+    def test_write_shouldreturntrueandaddsuccessmessage_whensuccessful(self) -> None:
+
+        # Arrange
+        content : str = "VSVersionInfo(...)"
+        output_path : str = "test_folder/version_info_file.txt"
+        expected_status : bool = True
+        expected_message : str = "The provided Version Info File ('test_folder/version_info_file.txt') has been successfully written to disk."
+
+        # Act
+        with patch("os.makedirs") as mocked_makedirs, \
+             patch("builtins.open", mock_open()) as mocked_open:
+            
+            vinf_writer : VersionInfoFileWriter = VersionInfoFileWriter()
+            print("test_write_shouldreturntrue")
+            print(len(vinf_writer.messages))
+
+            actual : bool = vinf_writer.write(content = content, output_path = output_path)
+
+            # Assert
+            self.assertEqual(expected_status, actual)
+            self.assertEqual(expected_message, vinf_writer.messages[0])
+            mocked_makedirs.assert_called_once_with(os.path.dirname(os.path.abspath(output_path)), exist_ok = True)
+            mocked_open.assert_called_once_with(output_path, 'w', encoding = 'utf-8')
+            mocked_open().write.assert_called_once_with(content)
+    def test_write_shouldreturnfalseandadderrormessage_whenoserroroccurs(self) -> None:
+
+        # Arrange
+        content : str = "Test content"
+        output_path : str = "test_folder/version_info_file.txt"
+        mocked_exception : OSError = OSError("Permission denied")
+        expected_status : bool = False
+        expected_message : str = "The provided Version Info File ('test_folder/version_info_file.txt') has not been written to disk ('Permission denied')."
+
+        # Act
+        with patch("os.makedirs", side_effect = mocked_exception):
+            
+            vinf_writer : VersionInfoFileWriter = VersionInfoFileWriter()
+            print("test_write_shouldreturnfalse")
+            print(len(vinf_writer.messages))
+            actual : bool = vinf_writer.write(content = content, output_path = output_path)
+
+            # Assert
+            self.assertEqual(expected_status, actual)
+            self.assertEqual(expected_message, vinf_writer.messages[0])
 
 # MAIN
 if __name__ == "__main__":
