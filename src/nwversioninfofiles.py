@@ -173,6 +173,7 @@ class VersionInfoFileWriter:
 
     @property
     def messages(self) -> tuple[str, ...]:
+        '''Returns an immutable copy of messages.'''
         return tuple(self._messages)
 
     def __init__(self) -> None:
@@ -204,6 +205,7 @@ class VersionInfoFileVerifier:
     
     @property
     def messages(self) -> tuple[str, ...]:
+        '''Returns an immutable copy of messages.'''
         return tuple(self._messages)
 
     def __init__(self) -> None:
