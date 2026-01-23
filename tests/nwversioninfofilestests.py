@@ -1,9 +1,8 @@
 # GLOBAL MODULES
 import unittest
 from argparse import ArgumentParser, Namespace
-from datetime import datetime, timezone
 from parameterized import parameterized
-from typing import Any, Callable, Literal, Optional, Tuple
+from typing import Any, Tuple
 from unittest.mock import Mock, mock_open, patch
 
 # LOCAL MODULES
