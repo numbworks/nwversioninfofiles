@@ -6,14 +6,23 @@ Contact: numbworks@gmail.com
 | Date | Author | Description |
 |---|---|---|
 | 2026-01-21 | numbworks | Created. |
+| 2026-01-24 | numbworks | Last update. |
 
 ## Introduction
 
 `nwversioninfofiles` is an application that facilitates the creation of Version Info Files for PyInstaller.
 
-## Getting Started
+## Getting Started (as a user)
 
-To run this application on Windows and Linux:
+To run this application as a user, open your terminal application and run one of these commands:
+
+- `pip install --extra-index-url https://numbworks.github.io nwversioninfofiles==1.0.0`
+- `pip install "https://github.com/numbworks/nwversioninfofiles/archive/refs/tags/v1.0.0.zip#subdirectory=src"`
+- `pip install 'git+https://github.com/numbworks/nwversioninfofiles.git@v1.0.0#egg=nwversioninfofiles&subdirectory=src'`
+
+## Getting Started (as a developer)
+
+To run this application as a developer:
 
 1. Download and install [Visual Studio Code](https://code.visualstudio.com/Download);
 2. Download and install [Docker](https://www.docker.com/products/docker-desktop/);
@@ -69,7 +78,7 @@ To run this application on Windows and Linux:
 Examples:
 
 ```cmd
-python.exe -m nwversioninfofilescli.py \
+python.exe -m nwversioninfofiles.py \
 	--company_name "numbworks" \
 	--legal_copyright "numbworks" \
 	--file_description "An app that does something." \
@@ -79,7 +88,7 @@ python.exe -m nwversioninfofilescli.py \
 ```
 
 ```cmd
-python.exe -m nwversioninfofilescli.py \
+python.exe -m nwversioninfofiles.py \
 	--company_name "numbworks" \
 	--legal_copyright "numbworks" \
 	--file_description "An app that does something." \
@@ -90,7 +99,7 @@ python.exe -m nwversioninfofilescli.py \
 ```
 
 ```cmd
-python.exe -m nwversioninfofilescli.py \
+python.exe -m nwversioninfofiles.py \
 	--company_name "numbworks" \
 	--legal_copyright "numbworks" \
 	--file_description "An app that does something." \
@@ -103,7 +112,9 @@ python.exe -m nwversioninfofilescli.py \
 
 ## Appendix - Architecture
 
-`nwversioninfofiles` fills the gap between `nuitka` and `pyinstaller` when, in a CI/CD pipeline, you have the need to build Windows executables using both packages:
+A primary difference between `pyinstaller` and `nuitka` is how they handle metadata: `pyinstaller` relies on Version Info Files, which are difficult to modify on-the-fly, whereas `nuitka` uses high-level command-line flags. Furthermore, `pyinstaller` provides no way to verify these files before the build begins.
+
+`nwversioninfofiles` fills the gap between both by simplifying metadata management/validation, which provides even more value when the user needs to integrate both tools in the same CI/CD pipeline.
 
 ![Architectural-Overview](Diagrams/Architectural-Overview.png)
 

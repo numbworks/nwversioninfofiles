@@ -13,7 +13,7 @@ python.exe -m nuitka \
 ```
 
 ```cmd
-python.exe -m nwversioninfofilescli.py \
+python.exe -m nwversioninfofiles.py \
 	--company_name "numbworks" \
 	--legal_copyright "numbworks" \
 	--file_description "An app that does something." \
