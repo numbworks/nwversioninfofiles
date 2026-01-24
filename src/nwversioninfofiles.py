@@ -174,10 +174,10 @@ class VersionInfoFileWriter:
     @property
     def messages(self) -> tuple[str, ...]:
         '''Returns an immutable copy of messages.'''
-        return tuple(self._messages)
+        return tuple(self.__messages)
 
     def __init__(self) -> None:
-        self._messages : list[str] = []
+        self.__messages : list[str] = []
 
     def write(self, content : str, output_path : str) -> bool:
 
@@ -190,13 +190,13 @@ class VersionInfoFileWriter:
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             
-            self._messages.append(_MessageCollection.provided_vinf_successfully_written(output_path))
+            self.__messages.append(_MessageCollection.provided_vinf_successfully_written(output_path))
 
             return True
             
         except Exception as e:
 
-            self._messages.append(_MessageCollection.provided_vinf_not_written(output_path, e))
+            self.__messages.append(_MessageCollection.provided_vinf_not_written(output_path, e))
             
             return False
 class VersionInfoFileVerifier:
@@ -206,10 +206,10 @@ class VersionInfoFileVerifier:
     @property
     def messages(self) -> tuple[str, ...]:
         '''Returns an immutable copy of messages.'''
-        return tuple(self._messages)
+        return tuple(self.__messages)
 
     def __init__(self) -> None:
-        self._messages : list[str] = []
+        self.__messages : list[str] = []
 
     def __is_windows(self) -> bool:
 
@@ -229,7 +229,7 @@ class VersionInfoFileVerifier:
 
         if not self.__is_windows():
             
-            self._messages.append(_MessageCollection.this_library_not_running_on_windows())
+            self.__messages.append(_MessageCollection.this_library_not_running_on_windows())
             
             return False
         
@@ -238,13 +238,13 @@ class VersionInfoFileVerifier:
             from PyInstaller.utils.win32.versioninfo import load_version_info_from_text_file    # type: ignore
             load_version_info_from_text_file(file_path)
             
-            self._messages.append(_MessageCollection.provided_vinf_compliant(file_path))
+            self.__messages.append(_MessageCollection.provided_vinf_compliant(file_path))
 
             return True
         
         except Exception as e:
 
-            self._messages.append(_MessageCollection.provided_vinf_not_compliant(file_path, e))            
+            self.__messages.append(_MessageCollection.provided_vinf_not_compliant(file_path, e))            
 
             return False
 class CLIManager:
