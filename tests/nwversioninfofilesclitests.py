@@ -121,6 +121,103 @@ class APFactoryTestCase(unittest.TestCase):
         with patch("sys.stderr", new_callable = StringIO):
             with self.assertRaises(SystemExit):
                 argument_parser.parse_args(args_list)
+class CLIManagerTestCase(unittest.TestCase):
+
+    def setUp(self):
+
+        self.company_name : str = "numbworks"
+        self.file_description : str = "An app that does something."
+        self.file_version : str = "1.0.0"
+        self.legal_copyright : str = "numbworks"
+        self.original_filename : str = "app.exe"
+        self.product_name : str = "app"
+
+        self.output_path : str = "test_folder/version_info_file.txt"
+        self.verify : bool = True
+
+        self.default_output_path : str = "default_folder/version_info_file.txt"
+        self.default_verify : bool = False
+
+        self.content : str = "Some content"
+
+        self.namespace_all : Namespace = Namespace(
+            company_name = self.company_name,
+            file_description = self.file_description,
+            file_version = self.file_version,
+            legal_copyright = self.legal_copyright,
+            original_filename = self.original_filename,
+            product_name = self.product_name,
+            output_path = self.output_path,
+            verify = self.verify
+        )
+        self.namespace_only_mandatory : Namespace = Namespace(
+            company_name = self.company_name,
+            file_description = self.file_description,
+            file_version = self.file_version,
+            legal_copyright = self.legal_copyright,
+            original_filename = self.original_filename,
+            product_name = self.product_name,
+            output_path = self.default_output_path,
+            verify = self.default_verify
+        )
+
+        self.args_all : list[str] = [
+            "--company_name", self.company_name,
+            "--file_description", self.file_description,
+            "--file_version", self.file_version,
+            "--legal_copyright", self.legal_copyright,
+            "--original_filename", self.original_filename,
+            "--product_name", self.product_name,
+            "--output_path", self.output_path,
+            "--verify"
+        ]
+
+    def test_lognamespace_shouldlogallarguments_wheninvoked(self) -> None:
+
+        # Arrange
+        namespace : Namespace = Namespace(file_path = "test.py", exclude = ["test_"])
+        logging_function : Mock = Mock()
+        cli_manager : CLIManager = CLIManager(logging_function = logging_function)
+
+        # Act
+        cli_manager._CLIManager__log_namespace(namespace = namespace) # type: ignore
+
+        # Assert
+        self.assertEqual(logging_function.call_count, 3)
+        logging_function.assert_any_call("file_path: 'test.py'")
+        logging_function.assert_any_call("exclude: '['test_']'")
+        logging_function.assert_any_call("")
+    def test_logmessages_shouldprintmessagetuple_wheninvoked(self) -> None:
+
+        # Arrange
+        logging_function : Mock = Mock()      
+        messages : tuple[str, ...] = tuple(["Message 1", "Message 2", "Message 3"])
+
+        # Act
+        cli_manager : CLIManager = CLIManager(logging_function = logging_function)        
+        cli_manager._CLIManager__log_messages(messages = messages)  # type: ignore
+
+        # Assert
+        self.assertEqual(logging_function.call_count, 3)
+        logging_function.assert_any_call(messages[0])
+        logging_function.assert_any_call(messages[1])
+        logging_function.assert_any_call(messages[2])
+
+    def test_getdefaultoutputpath_shouldreturnexpectedstring_wheninvoked(self) -> None:
+
+        # Arrange
+        original_filename : str = "myapp.exe"
+        expected : str = "/current/directory/myapp.txt"
+        
+        with patch("os.getcwd", return_value = "/current/directory"), \
+             patch("os.path.splitext", return_value = ("myapp", ".exe")):
+            
+            # Act
+            actual : str = CLIManager()._CLIManager__get_default_output_path(original_filename = original_filename)  # type: ignore
+
+            # Assert
+            self.assertEqual(expected, actual)    
+
 
 # MAIN
 if __name__ == "__main__":
