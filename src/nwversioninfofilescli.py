@@ -44,7 +44,7 @@ class CLISTRING:
 
     OPTION_OUTPUTPATH_FLAGS : Final[list[str]] = ["--output_path"]
     OPTION_OUTPUTPATH_REQUIRED : Final[bool] = False
-    OPTION_OUTPUTPATH_HELP : Final[str] = "Defines the output path for the Version Info File. If not provided, current working directory will be used."
+    OPTION_OUTPUTPATH_HELP : Final[str] = "Defines the path for the Version Info File. If not provided: './<original_filename>.txt'."
 
     OPTION_VERIFY_FLAGS : Final[list[str]] = ["--verify"]
     OPTION_VERIFY_REQUIRED : Final[bool] = False

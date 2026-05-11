@@ -3,7 +3,7 @@ from io import StringIO
 import unittest
 from argparse import ArgumentParser, Namespace
 from parameterized import parameterized
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
 # LOCAL MODULES
@@ -123,55 +123,6 @@ class APFactoryTestCase(unittest.TestCase):
                 argument_parser.parse_args(args_list)
 class CLIManagerTestCase(unittest.TestCase):
 
-    def setUp(self):
-
-        self.company_name : str = "numbworks"
-        self.file_description : str = "An app that does something."
-        self.file_version : str = "1.0.0"
-        self.legal_copyright : str = "numbworks"
-        self.original_filename : str = "app.exe"
-        self.product_name : str = "app"
-
-        self.output_path : str = "test_folder/version_info_file.txt"
-        self.verify : bool = True
-
-        self.default_output_path : str = "default_folder/version_info_file.txt"
-        self.default_verify : bool = False
-
-        self.content : str = "Some content"
-
-        self.namespace_all : Namespace = Namespace(
-            company_name = self.company_name,
-            file_description = self.file_description,
-            file_version = self.file_version,
-            legal_copyright = self.legal_copyright,
-            original_filename = self.original_filename,
-            product_name = self.product_name,
-            output_path = self.output_path,
-            verify = self.verify
-        )
-        self.namespace_only_mandatory : Namespace = Namespace(
-            company_name = self.company_name,
-            file_description = self.file_description,
-            file_version = self.file_version,
-            legal_copyright = self.legal_copyright,
-            original_filename = self.original_filename,
-            product_name = self.product_name,
-            output_path = self.default_output_path,
-            verify = self.default_verify
-        )
-
-        self.args_all : list[str] = [
-            "--company_name", self.company_name,
-            "--file_description", self.file_description,
-            "--file_version", self.file_version,
-            "--legal_copyright", self.legal_copyright,
-            "--original_filename", self.original_filename,
-            "--product_name", self.product_name,
-            "--output_path", self.output_path,
-            "--verify"
-        ]
-
     def test_lognamespace_shouldlogallarguments_wheninvoked(self) -> None:
 
         # Arrange
@@ -258,6 +209,81 @@ class CLIManagerTestCase(unittest.TestCase):
 
         for call in calls:
             self.assertNotIsInstance(call.args[0], SystemExit)
+
+    @parameterized.expand([
+        ("numbworks", "An app that does something.", "1.0.0", "numbworks", "app.exe", "app", None, None),
+        ("numbworks", "An app that does something.", "1.0.0", "numbworks", "app.exe", "app", "test_folder/version_info_file.txt", None),
+        ("numbworks", "An app that does something.", "1.0.0", "numbworks", "app.exe", "app", "test_folder/version_info_file.txt", True)
+    ])
+    def test_runandlog_shouldcallexpectedmethods_wheninvoked(
+        self, 
+        company_name : str,
+        file_description : str,
+        file_version : str,
+        legal_copyright : str,
+        original_filename : str,
+        product_name : str,
+        output_path : Optional[str],
+        verify : Optional[bool]) -> None:
+
+        # Arrange
+        namespace : Namespace = Namespace(
+            company_name = company_name,
+            file_description = file_description,
+            file_version = file_version,
+            legal_copyright = legal_copyright,
+            original_filename = original_filename,
+            product_name = product_name,
+            output_path = output_path,
+            verify = verify
+        )
+
+        argument_parser : MagicMock = MagicMock(spec = ArgumentParser)
+        argument_parser.parse_args.return_value = namespace
+
+        ap_factory : MagicMock = MagicMock(spec = APFactory)
+        ap_factory.create.return_value = argument_parser
+
+        vinf_creator : MagicMock = MagicMock(spec = VersionInfoFileCreator)
+        vinf_writer : MagicMock = MagicMock(spec = VersionInfoFileWriter)
+        vinf_verifier : MagicMock = MagicMock(spec = VersionInfoFileVerifier)
+
+        cli_manager : CLIManager = CLIManager(
+            ap_factory = ap_factory,
+            vinf_creator = vinf_creator,
+            vinf_writer = vinf_writer,
+            vinf_verifier = vinf_verifier
+        )
+
+        # Act
+        with patch.object(cli_manager, "_CLIManager__log_ascii_banner") as log_ascii_banner, \
+             patch.object(cli_manager, "_CLIManager__log_namespace") as log_namespace, \
+             patch.object(cli_manager, "_CLIManager__get_default_output_path") as get_default_output_path:
+
+            cli_manager.run_and_log()
+
+            # Assert
+            log_ascii_banner.assert_called_once()
+            ap_factory.create.assert_called_once()
+            argument_parser.parse_args.assert_called_once()
+            log_namespace.assert_called_once_with(namespace)
+
+            vinf_creator.create.assert_called_once_with(
+                company_name = company_name, 
+                file_description = file_description, 
+                file_version = file_version, 
+                legal_copyright = legal_copyright, 
+                original_filename = original_filename, 
+                product_name = product_name
+            )
+
+            if output_path:
+                get_default_output_path.assert_called_once_with(original_filename)
+
+            vinf_writer.write.assert_called_once()
+
+            if verify:
+                vinf_verifier.try_verify.assert_called_once_with(output_path)
 
 # MAIN
 if __name__ == "__main__":
