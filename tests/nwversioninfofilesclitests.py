@@ -1,4 +1,5 @@
 # GLOBAL MODULES
+from io import StringIO
 import unittest
 from argparse import ArgumentParser, Namespace
 from parameterized import parameterized
@@ -9,7 +10,7 @@ from unittest.mock import Mock, mock_open, patch
 import sys, os
 sys.path.append(os.path.dirname(__file__).replace('tests', 'src'))
 from nwversioninfofiles import VersionInfoFileCreator, VersionInfoFileWriter, VersionInfoFileVerifier
-from nwversioninfofilescli import CLIManager, CLISTRING, AsciiBannerManager, _MessageCollection
+from nwversioninfofilescli import APFactory, CLIManager, CLISTRING, AsciiBannerManager, _MessageCollection
 
 # SUPPORT METHODS
 # TEST CLASSES
@@ -83,6 +84,43 @@ class AsciiBannerManagerTestCase(unittest.TestCase):
             self.assertIn("top_border", actual)
             self.assertIn("ascii_art", actual)
             self.assertIn("bottom_border", actual)
+class APFactoryTestCase(unittest.TestCase):
+
+    @parameterized.expand([
+        CLISTRING.OPTION_COMPANYNAME_FLAGS[0],
+        CLISTRING.OPTION_FILEDESCRIPTION_FLAGS[0],
+        CLISTRING.OPTION_FILEVERSION_FLAGS[0],
+        CLISTRING.OPTION_LEGALCOPYRIGHT_FLAGS[0],
+        CLISTRING.OPTION_ORIGINALFILENAME_FLAGS[0],
+        CLISTRING.OPTION_PRODUCTNAME_FLAGS[0],
+        CLISTRING.OPTION_OUTPUTPATH_FLAGS[0],
+        CLISTRING.OPTION_VERIFY_FLAGS[0]
+    ])
+    def test_create_shouldreturnexpectedargumentparser_wheninvoked(self, flag : str) -> None:
+
+        # Arrange
+        # Act
+        argument_parser : ArgumentParser = APFactory().create()
+
+        # Assert
+        self.assertIsInstance(argument_parser, ArgumentParser)
+
+        arguments : list[str] = []
+        for action in argument_parser._actions:
+            arguments.extend(action.option_strings)
+
+        self.assertIn(flag, arguments)
+    
+    def test_create_shouldraiseerror_whenrequiredruntimeargumentismissing(self):
+
+        # Arrange
+        args_list : list[str] = CLISTRING.OPTION_OUTPUTPATH_FLAGS
+        argument_parser : ArgumentParser = APFactory().create()
+
+        # Act, Assert
+        with patch("sys.stderr", new_callable = StringIO):
+            with self.assertRaises(SystemExit):
+                argument_parser.parse_args(args_list)
 
 # MAIN
 if __name__ == "__main__":
