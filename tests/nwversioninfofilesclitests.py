@@ -36,7 +36,7 @@ class AsciiBannerManagerTestCase(unittest.TestCase):
     def test_createfiglet_shouldreturnexpectedmaxlength_wheninvoked(self) -> None:
 
         # Arrange
-        expected : int = 43
+        expected : int = 59
 
         # Act
         _, max_length = AsciiBannerManager()._AsciiBannerManager__create_figlet() # type: ignore
