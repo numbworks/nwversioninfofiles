@@ -8,7 +8,7 @@ from unittest.mock import Mock, mock_open, patch
 # LOCAL MODULES
 import sys, os
 sys.path.append(os.path.dirname(__file__).replace('tests', 'src'))
-from nwversioninfofiles import VersionInfoFileCreator, VersionInfoFileWriter, VersionInfoFileVerifier, CLIManager, CLISTRING
+from nwversioninfofilescli import VersionInfoFileCreator, VersionInfoFileWriter, VersionInfoFileVerifier, CLIManager, CLISTRING
 
 # SUPPORT METHODS
 # TEST CLASSES
