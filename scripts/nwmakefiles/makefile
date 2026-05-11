@@ -1,25 +1,13 @@
 SHELL := /bin/bash
-ROOT_DIR := $(shell cd .. && pwd)
-MODULE_VERSION = "1.0.0"
+ROOT_DIR := $(shell cd .. && cd .. && pwd)
+PROJECT_VERSION = "2.0.0"
 COVERAGE_THRESHOLD = 70
 
+changelog-concise:
+	@value=$$(cat $(ROOT_DIR)/CHANGELOG | grep -c -e "v$(PROJECT_VERSION)$$" -e "v$(PROJECT_VERSION) - BREAKING CHANGES$$"); \
+	if [ $$value -eq 1 ]; then echo "[OK] $@: 'CHANGELOG' updated to current version!"; else echo "[WARNING] $@: 'CHANGELOG' not updated to current version!"; fi;
 clear:
 	@clear
-calculate-commitavg:
-	@clear; \
-	python -m nwcommitaverages;
-changelog-concise:
-	@value=$$(cat $(ROOT_DIR)/CHANGELOG | grep -c -e "v$(MODULE_VERSION)$$" -e "v$(MODULE_VERSION) - BREAKING CHANGES$$"); \
-	if [ $$value -eq 1 ]; then echo "[OK] $@: 'CHANGELOG' updated to current version!"; else echo "[WARNING] $@: 'CHANGELOG' not updated to current version!"; fi;
-check-pythonversion:
-	@clear; \
-	code="from nwpackageversions import LanguageChecker; print(LanguageChecker().get_version_status(required=(3, 12, 5)))"; \
-	python -c "$$code"
-check-requirements:
-	@clear; \
-	file_path="$(ROOT_DIR)/.devcontainer/main/Dockerfile"; \
-	code="from nwpackageversions import RequirementChecker; print(RequirementChecker().try_check(file_path = '$$file_path', only_stable_releases = True, sort_requirement_details = True))"; \
-	python -c "$$code";
 codemetrics-concise:
 	@value=$$(radon cc -a -s $(ROOT_DIR)/src/$(MODULE_NAME).py  | grep -oP "Average complexity: \K[A-F]"); \
 	if [[ "$$value" == *"A"* ]]; then echo "[OK] $@: the cyclomatic complexity is excellent ('$$value')."; else echo "[WARNING] $@: the cyclomatic complexity is not excellent ('$$value')"; fi;
@@ -59,22 +47,17 @@ create-classdiagram:
 	echo '```' >> $$md_file; \
 	rm $$tmp_file; \
 	mv $$md_file $$final_file
-docstrings-concise:
-	@file_path=$(ROOT_DIR)/src/$(MODULE_NAME).py; \
-	value=$$(python -m nwdocstringchecking -fp $$file_path -e MessageCollection -e init -e str -e repr); \
-	if [[ "$$value" == *"All methods have docstrings."* ]]; then echo "[OK] $@: all methods have docstrings."; else echo "[WARNING] $@: not all methods have docstrings."; fi;
-docstrings-verbose:
-	@clear; \
-	file_path=$(ROOT_DIR)/src/$(MODULE_NAME).py; \
-	python -m nwdocstringchecking -fp $$file_path -e MessageCollection -e init -e str -e repr;
 makefile-info:
 	@echo "MODULE_NAME: $(MODULE_NAME)"; \
-	echo "MODULE_VERSION: $(MODULE_VERSION)"; \
+	echo "PROJECT_VERSION: $(PROJECT_VERSION)"; \
 	echo "COVERAGE_THRESHOLD: $(COVERAGE_THRESHOLD)%"
+setupinfo-concise:
+	@value=$$(cat $(ROOT_DIR)/src/setupinfo.py | grep -oP 'PROJECT_VERSION\s*:\s*str\s*=\s*"\K[\d.]+'); \
+	if [ $$value == "$(PROJECT_VERSION)" ]; then echo "[OK] $@: 'setupinfo.py' updated to current version!"; else echo "[WARNING] $@: 'setupinfo.py' not updated to current version!"; fi;
 tryinstall-concise:
 	@value=$$($(MAKE) tryinstall-verbose MODULE_NAME=$(MODULE_NAME) 2>&1); \
 	last_chars=$$(echo "$$value" | tail -c 100); \
-	if [[ "$$last_chars" == *"Version: $(MODULE_VERSION)"* ]]; then echo "[OK] $@: installation process works."; else echo "[WARNING] $@: installation process fails!"; fi;
+	if [[ "$$last_chars" == *"Version: $(PROJECT_VERSION)"* ]]; then echo "[OK] $@: installation process works."; else echo "[WARNING] $@: installation process fails!"; fi;
 tryinstall-verbose:
 	@clear; \
 	cd /home; \
@@ -112,9 +95,9 @@ update-codecoverage:
 	cd $(ROOT_DIR)/tests/; \
 	coverage run -m unittest $(MODULE_NAME)tests.py > /dev/null 2>&1; \
 	value=$$(coverage report --include=$(MODULE_NAME).py | grep -oP 'TOTAL\s+\d+\s+\d+\s+\K\d+(?=%)'); \
+	if [ -z "$$value" ]; then value=0; fi; \
 	if [ $$value -le 39 ]; then color="red"; elif [ $$value -le 69 ]; then color="orange"; else color="green"; fi; \
 	url="https://img.shields.io/badge/coverage-$${value}.0%25-$${color}"; \
 	echo "$$url" > $(ROOT_DIR)/codecoverage-$(MODULE_NAME).txt; \
 	curl -s $$url -o $(ROOT_DIR)/codecoverage-$(MODULE_NAME).svg; \
 	if [ $$? -eq 0 ]; then echo "[OK] $@: coverage badge updated successfully!"; else echo "[ERROR] $@: failed to update coverage badge."; fi;
-# \

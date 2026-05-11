@@ -8,8 +8,7 @@ MODULE_NAME = "nwversioninfofiles"
 	codemetrics-concise \
 	compile-concise \
 	coverage-concise \
-	docstrings-concise \
-	setup-concise \
+	setupinfo-concise \
 	tryinstall-concise \
 	type-concise \
 	unittest-concise \
@@ -18,11 +17,11 @@ MODULE_NAME = "nwversioninfofiles"
 all-concise: \
 	clear \
 	makefile-info \
+	changelog-concise \
 	codemetrics-concise \
 	compile-concise \
 	coverage-concise \
-	docstrings-concise \
-	setup-concise \
+	setupinfo-concise \
 	tryinstall-concise \
 	type-concise \
 	unittest-concise
