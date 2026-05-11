@@ -198,6 +198,7 @@ class CLIManager():
     __vinf_writer : VersionInfoFileWriter
     __vinf_verifier : VersionInfoFileVerifier
     __logging_function : Callable[[str], None]
+    __exit_function : Callable[[int], None]
 
     def __init__(
         self, 
@@ -206,7 +207,8 @@ class CLIManager():
         vinf_creator : VersionInfoFileCreator = VersionInfoFileCreator(),
         vinf_writer : VersionInfoFileWriter = VersionInfoFileWriter(),
         vinf_verifier : VersionInfoFileVerifier = VersionInfoFileVerifier(),
-        logging_function : Callable[[str], None] = lambda msg : print(msg)) -> None:
+        logging_function : Callable[[str], None] = lambda msg : print(msg),
+        exit_function : Callable[[int], None] = lambda exit_code : sys.exit(exit_code)) -> None:
         
         self.__ap_factory = ap_factory
         self.__ascii_banner_manager = ascii_banner_manager
@@ -214,6 +216,7 @@ class CLIManager():
         self.__vinf_writer = vinf_writer
         self.__vinf_verifier = vinf_verifier
         self.__logging_function = logging_function
+        self.__exit_function = exit_function
 
     def __log_ascii_banner(self) -> None:
 
@@ -266,14 +269,14 @@ class CLIManager():
         
         if not self.__vinf_writer.write(content = content, output_path = output_path):
             self.__log_messages(self.__vinf_writer.messages)
-            sys.exit(1)
+            self.__exit_function(1)
         
         if namespace.verify:
             if not self.__vinf_verifier.try_verify(output_path):
                 self.__log_messages(self.__vinf_verifier.messages)
-                sys.exit(1)
+                self.__exit_function(1)
 
-        sys.exit(0)
+        self.__exit_function(0)
 
     def run_and_log(self) -> None:
 
