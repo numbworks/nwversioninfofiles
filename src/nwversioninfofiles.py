@@ -7,9 +7,7 @@ Alias: nwvinf
 # GLOBAL MODULES
 import platform
 import os
-import sys
-from argparse import ArgumentParser, Namespace
-from typing import Callable, Final, Iterable, Optional, Tuple
+from typing import Tuple
 
 # LOCAL/NW MODULES
 # GENERIC CLASSES
