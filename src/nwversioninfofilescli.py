@@ -6,7 +6,7 @@
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from typing import Callable, Final, Iterable, Optional
+from typing import Callable, Final, Iterable
 
 # LOCAL/NW MODULES
 from nwversioninfofiles import VersionInfoFileCreator, VersionInfoFileWriter, VersionInfoFileVerifier

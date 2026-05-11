@@ -4,7 +4,7 @@ import unittest
 from argparse import ArgumentParser, Namespace
 from parameterized import parameterized
 from typing import Any, Tuple
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 # LOCAL MODULES
 import sys, os
@@ -218,6 +218,46 @@ class CLIManagerTestCase(unittest.TestCase):
             # Assert
             self.assertEqual(expected, actual)    
 
+    def test_runandlog_shouldlogexceptionmessage_whenexceptionisraised(self):
+
+        # Arrange
+        expected : str = "Unexpected Error"
+        ap_factory : MagicMock = MagicMock(spec = APFactory)
+        ap_factory.create.side_effect = Exception(expected)
+        
+        logging_function : MagicMock = MagicMock()
+        
+        cli_manager : CLIManager = CLIManager(
+            ap_factory = ap_factory,
+            logging_function = logging_function
+        )
+
+        # Act
+        cli_manager.run_and_log()
+
+        # Assert
+        logging_function.assert_any_call(expected)
+    def test_runandlog_shoulddonothing_whensystemexitoccurs(self):
+
+        # Arrange
+        ap_factory : MagicMock = MagicMock(spec = APFactory)
+        ap_factory.create.side_effect = SystemExit()
+        
+        logging_function : MagicMock = MagicMock()
+        
+        cli_manager : CLIManager = CLIManager(
+            ap_factory = ap_factory,
+            logging_function = logging_function
+        )
+
+        # Act
+        cli_manager.run_and_log()
+
+        # Assert
+        calls : list[Any] = logging_function.call_args_list
+
+        for call in calls:
+            self.assertNotIsInstance(call.args[0], SystemExit)
 
 # MAIN
 if __name__ == "__main__":
