@@ -1,18 +1,15 @@
 {
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "Python: FastAPI",
+            "name": "Debug: nwversioninfofilescli",
             "type": "debugpy",
             "request": "launch",
-            "module": "uvicorn",
-            "cwd": "${workspaceFolder}/src/",
-            "args": [
-                "nwtraderaanalyticsapi:app",
-                "--reload",
-                "--port",
-                "8000"
-            ]
+            "program": "${workspaceFolder}/src/nwversioninfofilescli.py",
+            "console": "integratedTerminal",
+            "args": [],
+            "justMyCode": true
         }
     ]
 }

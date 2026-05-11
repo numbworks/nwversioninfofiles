@@ -10,6 +10,7 @@ from typing import Callable, Final, Iterable, Optional
 
 # LOCAL/NW MODULES
 from nwversioninfofiles import VersionInfoFileCreator, VersionInfoFileWriter, VersionInfoFileVerifier
+from setupinfo import CLI_DESCRIPTION, PROJECT_VERSION
 
 # GENERIC CLASSES
 # CONSTANTS
@@ -124,77 +125,119 @@ class AsciiBannerManager:
         ])
 
         return ascii_banner
-class CLIManager:
+class APFactory():
 
-    '''Handles CLI argument parsing and corresponding actions.'''
-    
-    __argument_parser : ArgumentParser
-    __vinf_creator : VersionInfoFileCreator
-    __vinf_writer : VersionInfoFileWriter
-    __vinf_verifier : VersionInfoFileVerifier
-    __print_function : Callable[[str], None]
+    '''Encapsulates all the logic related to the creation of a custom instance of argparse.ArgumentParser.'''
 
-    def __init__(
-        self, 
-        argument_parser : ArgumentParser = ArgumentParser(
-            prog = CLISTRING.PROGRAM_NAME, 
-            description = CLISTRING.PROGRAM_DESCRIPTION
-        ),
-        vinf_creator : VersionInfoFileCreator = VersionInfoFileCreator(),
-        vinf_writer : VersionInfoFileWriter = VersionInfoFileWriter(),
-        vinf_verifier : VersionInfoFileVerifier = VersionInfoFileVerifier(),
-        print_function : Callable[[str], None] = lambda msg : print(msg)
-        ) -> None:
-        
-        self.__argument_parser = argument_parser
-        self.__vinf_creator = vinf_creator
-        self.__vinf_writer = vinf_writer
-        self.__vinf_verifier = vinf_verifier
-        self.__print_function = print_function
+    def create(self) -> ArgumentParser:
 
-    def __initialize_parser(self):
-        
-        self.__argument_parser.add_argument(
+        '''
+            Creates a custom instance of argparse.ArgumentParser.
+
+            The "prog" argument is not provided in order to make the "usage" statement  dynamic:
+
+                usage: nwversioninfofilescli.py ...
+        '''
+
+        argument_parser : ArgumentParser = ArgumentParser(description = CLI_DESCRIPTION)
+
+        argument_parser.add_argument(
             *CLISTRING.OPTION_COMPANYNAME_FLAGS, 
             required = CLISTRING.OPTION_COMPANYNAME_REQUIRED, 
             help = CLISTRING.OPTION_COMPANYNAME_HELP
         )
-        self.__argument_parser.add_argument(
+        
+        argument_parser.add_argument(
             *CLISTRING.OPTION_FILEDESCRIPTION_FLAGS, 
             required = CLISTRING.OPTION_FILEDESCRIPTION_REQUIRED, 
             help = CLISTRING.OPTION_FILEDESCRIPTION_HELP
         )
-        self.__argument_parser.add_argument(
+        
+        argument_parser.add_argument(
             *CLISTRING.OPTION_FILEVERSION_FLAGS, 
             required = CLISTRING.OPTION_FILEVERSION_REQUIRED, 
             help = CLISTRING.OPTION_FILEVERSION_HELP
         )
-        self.__argument_parser.add_argument(
+        
+        argument_parser.add_argument(
             *CLISTRING.OPTION_LEGALCOPYRIGHT_FLAGS, 
             required = CLISTRING.OPTION_LEGALCOPYRIGHT_REQUIRED, 
             help = CLISTRING.OPTION_LEGALCOPYRIGHT_HELP
         )
-        self.__argument_parser.add_argument(
+        
+        argument_parser.add_argument(
             *CLISTRING.OPTION_ORIGINALFILENAME_FLAGS, 
             required = CLISTRING.OPTION_ORIGINALFILENAME_REQUIRED, 
             help = CLISTRING.OPTION_ORIGINALFILENAME_HELP
         )
-        self.__argument_parser.add_argument(
+        
+        argument_parser.add_argument(
             *CLISTRING.OPTION_PRODUCTNAME_FLAGS, 
             required = CLISTRING.OPTION_PRODUCTNAME_REQUIRED, 
             help = CLISTRING.OPTION_PRODUCTNAME_HELP
         )
-        self.__argument_parser.add_argument(
+        
+        argument_parser.add_argument(
             *CLISTRING.OPTION_OUTPUTPATH_FLAGS, 
             required = CLISTRING.OPTION_OUTPUTPATH_REQUIRED, 
             help = CLISTRING.OPTION_OUTPUTPATH_HELP
         )
-        self.__argument_parser.add_argument(
+        
+        argument_parser.add_argument(
             *CLISTRING.OPTION_VERIFY_FLAGS, 
             required = CLISTRING.OPTION_VERIFY_REQUIRED, 
             help = CLISTRING.OPTION_VERIFY_HELP,
             action = CLISTRING.OPTION_VERIFY_ACTION
         )
+
+        return argument_parser
+class CLIManager():
+
+    '''Collects all the logic related to the CLI management.'''
+
+    __ap_factory : APFactory
+    __ascii_banner_manager : AsciiBannerManager
+    __vinf_creator : VersionInfoFileCreator
+    __vinf_writer : VersionInfoFileWriter
+    __vinf_verifier : VersionInfoFileVerifier
+    __logging_function : Callable[[str], None]
+
+    def __init__(
+        self, 
+        ap_factory : APFactory = APFactory(), 
+        ascii_banner_manager : AsciiBannerManager = AsciiBannerManager(),
+        vinf_creator : VersionInfoFileCreator = VersionInfoFileCreator(),
+        vinf_writer : VersionInfoFileWriter = VersionInfoFileWriter(),
+        vinf_verifier : VersionInfoFileVerifier = VersionInfoFileVerifier(),
+        logging_function : Callable[[str], None] = lambda msg : print(msg)) -> None:
+        
+        self.__ap_factory = ap_factory
+        self.__ascii_banner_manager = ascii_banner_manager
+        self.__vinf_creator = vinf_creator
+        self.__vinf_writer = vinf_writer
+        self.__vinf_verifier = vinf_verifier
+        self.__logging_function = logging_function
+
+    def __log_ascii_banner(self) -> None:
+
+        '''Logs the ASCII banner.'''
+
+        self.__logging_function(self.__ascii_banner_manager.create(PROJECT_VERSION))
+    def __log_namespace(self, namespace : Namespace):
+
+        '''Logs the provided args.'''
+
+        for key, value in vars(namespace).items():
+            self.__logging_function(f"{key}: '{value}'")
+            
+        self.__logging_function("")
+    def __log_messages(self, messages : Iterable[str]) -> None:
+                       
+        '''Prints messages.'''
+
+        for message in messages:
+            self.__logging_function(message)
+
     def __get_default_output_path(self, original_filename : str) -> str:
 
         '''
@@ -206,13 +249,7 @@ class CLIManager:
         output_path : str = os.path.join(os.getcwd(), f"{base_name}.txt")
 
         return output_path
-    def __print_messages(self, messages : Iterable[str]) -> None:
-                       
-        '''Prints messages.'''
-
-        for message in messages:
-            self.__print_function(message)
-    def __try_dispatch(self, namespace : Namespace) -> None:
+    def __run_and_log(self, namespace : Namespace) -> None:
         
         '''Attempts to dispatch the provided arguments to the corresponding actions.'''
 
@@ -226,38 +263,47 @@ class CLIManager:
         )
         
         output_path : str = self.__get_default_output_path(namespace.original_filename)
+
         if namespace.output_path:
             output_path = namespace.output_path
         
         if not self.__vinf_writer.write(content = content, output_path = output_path):
-            self.__print_messages(self.__vinf_writer.messages)
+            self.__log_messages(self.__vinf_writer.messages)
             sys.exit(1)
         
         if namespace.verify:
             if not self.__vinf_verifier.try_verify(output_path):
-                self.__print_messages(self.__vinf_verifier.messages)
+                self.__log_messages(self.__vinf_verifier.messages)
                 sys.exit(1)
 
         sys.exit(0)
 
-    def parse(self, args: Optional[list[str]] = None) -> None:
+    def run_and_log(self) -> None:
 
-        '''Parses args.'''
+        '''
+            Performs the user-provided and log them.
+            
+            The SystemExit exception occurs when a required option is not provided.
+            SystemExit doesn't inherit from Exception and has no message, therefore we need to handle it accordingly.            
+        '''
 
         try:
 
-            self.__initialize_parser()
+            self.__log_ascii_banner()
 
-            namespace : Namespace = self.__argument_parser.parse_args(args)
+            argument_parser : ArgumentParser = self.__ap_factory.create()
+            namespace : Namespace = argument_parser.parse_args()
+
+            self.__log_namespace(namespace)          
+            self.__run_and_log(namespace)
+
+        except (Exception, SystemExit) as e:
             
-            self.__try_dispatch(namespace)
-
-        except Exception as e:
-            self.__print_function(str(e))
-            sys.exit(1)
+            if not isinstance(e, SystemExit):
+                self.__logging_function(str(e))
 
 # MAIN
-def main(): pass
+def main(): CLIManager().run_and_log()
 
 if __name__ == "__main__":
     main()
