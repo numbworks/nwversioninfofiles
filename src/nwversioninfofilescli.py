@@ -18,9 +18,6 @@ class CLISTRING:
 
     '''Collects all the CLI-related strings.'''
 
-    PROGRAM_NAME : Final[str] = "nwvinfo"
-    PROGRAM_DESCRIPTION : Final[str] = "A CLI application to create and verify Version Info Files for PyInstaller."
-
     OPTION_COMPANYNAME_FLAGS : Final[list[str]] = ["--company_name"]
     OPTION_COMPANYNAME_REQUIRED : Final[bool] = True
     OPTION_COMPANYNAME_HELP : Final[str] = "Includes the company name in the Version Info File."
