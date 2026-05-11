@@ -1,10 +1,10 @@
 # GLOBAL MODULES
-from io import StringIO
 import unittest
 from argparse import ArgumentParser, Namespace
+from io import StringIO
 from parameterized import parameterized
-from typing import Any, Optional, Tuple
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from typing import Any, Optional
+from unittest.mock import MagicMock, Mock, patch
 
 # LOCAL MODULES
 import sys, os
