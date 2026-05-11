@@ -4,6 +4,7 @@
 	"initializeCommand": "docker build -f .devcontainer/main/Dockerfile -t nwversioninfofiles:main .",
 	"runArgs": ["--name", "nwversioninfofiles-main"],
 	"containerEnv": {
+		"TZ": "Europe/Stockholm",
 		"DEVCONTAINER_NAME": "main"
 	},
 	"customizations": {
